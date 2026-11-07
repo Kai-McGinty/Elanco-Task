@@ -138,7 +138,7 @@
     }
 
     .button:hover { transform: translateY(-1px); background: var(--green-dark); }
-    .button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid #91b849; outline-offset: 3px; }
+    .button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #91b849; outline-offset: 3px; }
 
     .hero-note { margin: 1rem 0 0; color: var(--muted); font-size: .88rem; }
 
@@ -200,7 +200,7 @@
 
     .search-form {
       display: grid;
-      grid-template-columns: 1fr 1.4fr auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       align-items: end;
       gap: 1rem;
       margin-top: 1.5rem;
@@ -370,23 +370,30 @@
             <p class="eyebrow">Search the reports</p>
             <h2>Find tick sightings</h2>
           </div>
-          <p>Pick a search type, enter a city or species, and select Search.</p>
+          <p>Search by species, then narrow results by location and sighting date.</p>
         </div>
         <div class="search-panel">
           <button class="button" id="browse-button" type="button">Browse all sightings</button>
           <form class="search-form" id="search-form">
             <div>
-              <label for="search-type">Search by</label>
-              <select id="search-type" name="type">
-                <option value="city">City</option>
-                <option value="species">Species</option>
-              </select>
+              <label for="search-term">Filter by species</label>
+              <input id="search-term" name="species" type="search" placeholder="For example, Marsh tick">
             </div>
             <div>
-              <label for="search-term">City or species name</label>
-              <input id="search-term" name="term" type="search" placeholder="For example, Manchester" required>
+              <label for="location-filter">Filter by location</label>
+              <input id="location-filter" name="location" type="search" placeholder="Any location">
             </div>
-            <button class="button" type="submit">Search</button>
+            <div>
+              <label for="date-from">From date</label>
+              <input id="date-from" name="dateFrom" type="date">
+            </div>
+            <div>
+              <label for="date-to">To date</label>
+              <input id="date-to" name="dateTo" type="date">
+            </div>
+            <div>
+              <button class="button" type="submit">Search</button>
+            </div>
           </form>
           <p class="status" id="status" role="status" aria-live="polite"></p>
           <div class="results" id="results"></div>
@@ -408,13 +415,16 @@
 
   <script>
     const form = document.querySelector("#search-form");
-    const searchType = document.querySelector("#search-type");
     const searchTerm = document.querySelector("#search-term");
+    const locationFilter = document.querySelector("#location-filter");
+    const dateFrom = document.querySelector("#date-from");
+    const dateTo = document.querySelector("#date-to");
     const browseButton = document.querySelector("#browse-button");
     const results = document.querySelector("#results");
     const status = document.querySelector("#status");
     const pagination = document.querySelector("#pagination");
     const pageSize = 20;
+    let allSightings = [];
     let sightingsToDisplay = [];
     let currentPage = 1;
 
@@ -428,7 +438,7 @@
 
       if (sightingsToDisplay.length === 0) {
         pagination.hidden = true;
-        showStatus("No sightings matched that search. Try a different name.");
+        showStatus("No sightings matched those filters. Try changing your search or filters.");
         return;
       }
 
@@ -461,6 +471,7 @@
     }
 
     async function loadSightings(url) {
+      allSightings = [];
       sightingsToDisplay = [];
       currentPage = 1;
       results.replaceChildren();
@@ -475,12 +486,76 @@
 
         const body = await response.text();
         const sightings = JSON.parse(body);
-        sightingsToDisplay = Array.isArray(sightings) ? sightings : [sightings];
-        displaySightings();
+        allSightings = Array.isArray(sightings) ? sightings : [sightings];
+        applyFilters();
       } catch (error) {
+        allSightings = [];
+        sightingsToDisplay = [];
         pagination.hidden = true;
         showStatus(error.message || "Could not load sightings. Please try again.", true);
       }
+    }
+
+    function getDateKey(value) {
+      const dateText = String(value || "").trim();
+      const isoDate = dateText.match(/^(\d{4}-\d{2}-\d{2})(?:$|T|\s)/);
+      if (isoDate && !Number.isNaN(Date.parse(`${isoDate[1]}T00:00:00Z`))) {
+        return isoDate[1];
+      }
+
+      const parsedDate = new Date(dateText);
+      if (Number.isNaN(parsedDate.getTime())) {
+        return null;
+      }
+
+      const year = parsedDate.getFullYear();
+      const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(parsedDate.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function applyFilters() {
+      const startDate = dateFrom.value;
+      const endDate = dateTo.value;
+      if (startDate && endDate && startDate > endDate) {
+        sightingsToDisplay = [];
+        results.replaceChildren();
+        pagination.hidden = true;
+        showStatus("The end date must be on or after the start date.", true);
+        return;
+      }
+
+      const locationTerm = locationFilter.value.trim().toLocaleLowerCase();
+      sightingsToDisplay = allSightings.filter((sighting) => {
+        const locationMatches = !locationTerm
+          || String(sighting.location || "").toLocaleLowerCase().includes(locationTerm);
+        if (!locationMatches) {
+          return false;
+        }
+
+        if (!startDate && !endDate) {
+          return true;
+        }
+
+        const sightingDate = getDateKey(sighting.date);
+        return sightingDate !== null
+          && (!startDate || sightingDate >= startDate)
+          && (!endDate || sightingDate <= endDate);
+      });
+      sightingsToDisplay.sort((a, b) => {
+        const dateA = getDateKey(a.date);
+        const dateB = getDateKey(b.date);
+        if (dateA === null) {
+          return dateB === null ? 0 : 1;
+        }
+        if (dateB === null) {
+          return -1;
+        }
+        return dateB.localeCompare(dateA);
+      });
+
+      currentPage = 1;
+      displaySightings();
     }
 
     function renderPagination(totalPages) {
@@ -524,22 +599,25 @@
       displaySightings();
     }
 
-    browseButton.addEventListener("click", () => loadSightings("/tick-sightings"));
+    browseButton.addEventListener("click", () => {
+      searchTerm.value = "";
+      loadSightings("/tick-sightings");
+    });
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       const term = searchTerm.value.trim();
-      if (!term) {
-        searchTerm.focus();
-        return;
-      }
 
-      const encodedTerm = encodeURIComponent(term);
-      const url = searchType.value === "city"
-        ? `/tick-sightings/city/${encodedTerm}`
-        : `/tick-sightings/species?species=${encodedTerm}`;
+      const url = !term
+        ? "/tick-sightings"
+        : `/tick-sightings/species?species=${encodeURIComponent(term)}`;
       loadSightings(url);
     });
+
+    for (const filter of [locationFilter, dateFrom, dateTo]) {
+      filter.addEventListener("input", applyFilters);
+      filter.addEventListener("change", applyFilters);
+    }
   </script>
 </body>
 </html>
