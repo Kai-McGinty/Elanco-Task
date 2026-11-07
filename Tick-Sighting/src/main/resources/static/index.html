@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f1">
+  <title>Tick Tracker | Explore sightings</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20352d;
+      --muted: #64736a;
+      --green: #245c43;
+      --green-dark: #194632;
+      --mint: #e6efe6;
+      --paper: #ffffff;
+      --line: #e1e8df;
+      --accent: #d7ed9f;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f7f8f4;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; }
+
+    .site-header {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .9rem max(1.25rem, calc((100% - 1120px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgb(255 255 255 / 94%);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      color: var(--green-dark);
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 2.2rem;
+      height: 2.2rem;
+      place-items: center;
+      border-radius: .75rem;
+      background: var(--mint);
+      font-size: 1.2rem;
+    }
+
+    nav { display: flex; flex-wrap: wrap; gap: .3rem; }
+
+    nav a {
+      padding: .55rem .8rem;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    nav a:hover, nav a:focus-visible {
+      color: var(--green-dark);
+      background: var(--mint);
+    }
+
+    main { overflow: hidden; }
+
+    .hero {
+      position: relative;
+      padding: clamp(4rem, 10vw, 7.5rem) 1.25rem 5.5rem;
+      background:
+        radial-gradient(ellipse at 82% 18%, rgb(215 237 159 / 58%), transparent 29rem),
+        linear-gradient(135deg, #edf4eb, #f8f8f2 64%);
+    }
+
+    .hero-inner, .content { width: min(100%, 1120px); margin: 0 auto; }
+
+    .eyebrow {
+      margin: 0 0 .8rem;
+      color: var(--green);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 700px;
+      margin-bottom: 1rem;
+      font-size: clamp(2.5rem, 6vw, 4.7rem);
+      letter-spacing: -.055em;
+      line-height: 1.04;
+    }
+
+    .hero-copy {
+      max-width: 590px;
+      margin-bottom: 1.7rem;
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 2.9rem;
+      align-items: center;
+      justify-content: center;
+      padding: .7rem 1.1rem;
+      border: 0;
+      border-radius: .7rem;
+      background: var(--green);
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 750;
+      text-decoration: none;
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    .button:hover { transform: translateY(-1px); background: var(--green-dark); }
+    .button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid #91b849; outline-offset: 3px; }
+
+    .hero-note { margin: 1rem 0 0; color: var(--muted); font-size: .88rem; }
+
+    .content { padding: 4.5rem 1.25rem; }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-heading h2 {
+      margin-bottom: .35rem;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: -.04em;
+    }
+
+    .section-heading p { max-width: 560px; margin-bottom: 0; color: var(--muted); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      min-height: 190px;
+      padding: 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--paper);
+      box-shadow: 0 8px 28px rgb(34 58 43 / 4%);
+    }
+
+    .card-icon {
+      display: grid;
+      width: 2.7rem;
+      height: 2.7rem;
+      margin-bottom: 1rem;
+      place-items: center;
+      border-radius: .85rem;
+      background: var(--mint);
+      font-size: 1.25rem;
+    }
+
+    .card h3 { margin-bottom: .35rem; font-size: 1.1rem; }
+    .card p { margin-bottom: 0; color: var(--muted); font-size: .94rem; }
+
+    .search-section { background: #edf2eb; }
+
+    .search-panel {
+      padding: clamp(1.25rem, 4vw, 2rem);
+      border: 1px solid #dce6d9;
+      border-radius: 1rem;
+      background: var(--paper);
+    }
+
+    .search-form {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr auto;
+      align-items: end;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    label { display: block; margin-bottom: .4rem; font-size: .9rem; font-weight: 750; }
+
+    input {
+      width: 100%;
+      min-height: 2.9rem;
+      padding: .65rem .8rem;
+      border: 1px solid #cbd6ca;
+      border-radius: .65rem;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    select {
+      width: 100%;
+      min-height: 2.9rem;
+      padding: .65rem .8rem;
+      border: 1px solid #cbd6ca;
+      border-radius: .65rem;
+      background: white;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    input::placeholder { color: #8a968e; }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .result-card {
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: .8rem;
+      background: #fbfcfa;
+    }
+
+    .result-card h3 { margin-bottom: .25rem; font-size: 1rem; }
+    .result-card p { margin: .25rem 0 0; color: var(--muted); font-size: .9rem; }
+
+    .status { margin: 1rem 0 0; color: var(--muted); }
+    .status:empty { display: none; }
+    .status.error { color: #a3332c; }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+      margin-top: 1.5rem;
+    }
+
+    .pagination[hidden] { display: none; }
+    .pagination .page-number {
+      display: grid;
+      min-width: 2.5rem;
+      min-height: 2.5rem;
+      place-items: center;
+      padding: .4rem;
+      border: 1px solid var(--line);
+      border-radius: .65rem;
+      background: var(--paper);
+      color: var(--green-dark);
+      cursor: pointer;
+      font: inherit;
+      font-size: .9rem;
+    }
+
+    .pagination .page-number:hover { background: var(--mint); }
+    .pagination .page-number[aria-current="page"] {
+      border-color: var(--green);
+      background: var(--green);
+      color: white;
+      font-weight: 750;
+    }
+
+    .pagination .ellipsis { padding: 0 .2rem; color: var(--muted); }
+
+    .about-section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+    .about-card { padding: 1.5rem; border-left: 4px solid #a6c66a; border-radius: .25rem .8rem .8rem .25rem; background: var(--paper); }
+    .about-card p:last-child { margin-bottom: 0; color: var(--muted); }
+
+    footer {
+      padding: 1.5rem 1.25rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      text-align: center;
+      font-size: .88rem;
+    }
+
+    @media (max-width: 720px) {
+      .site-header { align-items: flex-start; flex-direction: column; padding: .8rem 1rem; }
+      nav { width: 100%; }
+      nav a { padding: .4rem .65rem; }
+      .cards { grid-template-columns: 1fr; }
+      .card { min-height: auto; }
+      .search-form { grid-template-columns: 1fr; }
+      .search-form .button { width: 100%; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Tick Tracker home">
+      <span class="brand-mark" aria-hidden="true">✳</span>
+      <span>Tick Tracker</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#home">Home</a>
+      <a href="#explore">Explore</a>
+      <a href="#search">Search sightings</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-inner">
+        <p class="eyebrow">Community sightings</p>
+        <h1>Know what’s<br>out there.</h1>
+        <p class="hero-copy">Explore tick sightings by location and species. Use the information to stay curious, informed, and prepared outdoors.</p>
+        <a class="button" href="#search">Find sightings <span aria-hidden="true">&nbsp;→</span></a>
+        <p class="hero-note">Search reported sightings below. Results come from the Tick Tracker data service.</p>
+      </div>
+    </section>
+
+    <section class="content" id="explore">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Start exploring</p>
+          <h2>Find the information you need</h2>
+        </div>
+        <p>Choose a place to start. You can browse all available reports or narrow your search by city or species.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <span class="card-icon" aria-hidden="true">⌖</span>
+          <h3>Browse sightings</h3>
+          <p>See all sightings currently available in the data service.</p>
+        </article>
+        <article class="card">
+          <span class="card-icon" aria-hidden="true">⌕</span>
+          <h3>Search by city</h3>
+          <p>Look up reported sightings for a city or location.</p>
+        </article>
+        <article class="card">
+          <span class="card-icon" aria-hidden="true">✳</span>
+          <h3>Explore species</h3>
+          <p>Find sightings by a tick’s common species name.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="search-section" id="search">
+      <div class="content">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Search the reports</p>
+            <h2>Find tick sightings</h2>
+          </div>
+          <p>Pick a search type, enter a city or species, and select Search.</p>
+        </div>
+        <div class="search-panel">
+          <button class="button" id="browse-button" type="button">Browse all sightings</button>
+          <form class="search-form" id="search-form">
+            <div>
+              <label for="search-type">Search by</label>
+              <select id="search-type" name="type">
+                <option value="city">City</option>
+                <option value="species">Species</option>
+              </select>
+            </div>
+            <div>
+              <label for="search-term">City or species name</label>
+              <input id="search-term" name="term" type="search" placeholder="For example, Manchester" required>
+            </div>
+            <button class="button" type="submit">Search</button>
+          </form>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+          <div class="results" id="results"></div>
+          <nav class="pagination" id="pagination" aria-label="Sightings pages" hidden></nav>
+        </div>
+      </div>
+    </section>
+
+    <section class="content about-section" id="about">
+      <div class="about-card">
+        <p class="eyebrow">About this page</p>
+        <h2>Explore with awareness</h2>
+        <p>This site helps you explore reported tick sightings. A sighting is a report, not a guarantee of current conditions. Follow local health guidance and take appropriate precautions when spending time outdoors.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>Tick Tracker · Explore reported sightings</footer>
+
+  <script>
+    const form = document.querySelector("#search-form");
+    const searchType = document.querySelector("#search-type");
+    const searchTerm = document.querySelector("#search-term");
+    const browseButton = document.querySelector("#browse-button");
+    const results = document.querySelector("#results");
+    const status = document.querySelector("#status");
+    const pagination = document.querySelector("#pagination");
+    const pageSize = 20;
+    let sightingsToDisplay = [];
+    let currentPage = 1;
+
+    function showStatus(message, isError = false) {
+      status.textContent = message;
+      status.classList.toggle("error", isError);
+    }
+
+    function displaySightings() {
+      results.replaceChildren();
+
+      if (sightingsToDisplay.length === 0) {
+        pagination.hidden = true;
+        showStatus("No sightings matched that search. Try a different name.");
+        return;
+      }
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageSightings = sightingsToDisplay.slice(startIndex, startIndex + pageSize);
+      const totalPages = Math.ceil(sightingsToDisplay.length / pageSize);
+
+      for (const sighting of pageSightings) {
+        const card = document.createElement("article");
+        card.className = "result-card";
+
+        const heading = document.createElement("h3");
+        heading.textContent = sighting.species || "Tick sighting";
+        const location = document.createElement("p");
+        location.textContent = `Location: ${sighting.location || "Not provided"}`;
+        const date = document.createElement("p");
+        date.textContent = `Date: ${sighting.date || "Not provided"}`;
+        const latinName = document.createElement("p");
+        latinName.textContent = `Latin name: ${sighting.latinName || "Not provided"}`;
+
+        card.append(heading, location, date, latinName);
+        results.append(card);
+      }
+
+      pagination.hidden = totalPages <= 1;
+      renderPagination(totalPages);
+      const firstVisible = startIndex + 1;
+      const lastVisible = startIndex + pageSightings.length;
+      showStatus(`Showing ${firstVisible}–${lastVisible} of ${sightingsToDisplay.length} sightings.`);
+    }
+
+    async function loadSightings(url) {
+      sightingsToDisplay = [];
+      currentPage = 1;
+      results.replaceChildren();
+      pagination.hidden = true;
+      showStatus("Loading sightings…");
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`The service returned an error (${response.status}).`);
+        }
+
+        const body = await response.text();
+        const sightings = JSON.parse(body);
+        sightingsToDisplay = Array.isArray(sightings) ? sightings : [sightings];
+        displaySightings();
+      } catch (error) {
+        pagination.hidden = true;
+        showStatus(error.message || "Could not load sightings. Please try again.", true);
+      }
+    }
+
+    function renderPagination(totalPages) {
+      pagination.replaceChildren();
+
+      const visiblePages = new Set([1, totalPages]);
+      for (let page = currentPage - 2; page <= currentPage + 2; page += 1) {
+        if (page > 1 && page < totalPages) {
+          visiblePages.add(page);
+        }
+      }
+
+      let previousPage = 0;
+      for (const page of [...visiblePages].sort((a, b) => a - b)) {
+        if (previousPage > 0 && page - previousPage > 1) {
+          const ellipsis = document.createElement("span");
+          ellipsis.className = "ellipsis";
+          ellipsis.textContent = "…";
+          pagination.append(ellipsis);
+        }
+
+        const pageButton = document.createElement("button");
+        pageButton.type = "button";
+        pageButton.className = "page-number";
+        pageButton.textContent = String(page);
+        pageButton.setAttribute("aria-label", `Page ${page}`);
+        if (page === currentPage) {
+          pageButton.setAttribute("aria-current", "page");
+          pageButton.disabled = true;
+        } else {
+          pageButton.addEventListener("click", () => goToPage(page));
+        }
+        pagination.append(pageButton);
+        previousPage = page;
+      }
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(sightingsToDisplay.length / pageSize);
+      currentPage = Math.min(Math.max(page, 1), totalPages);
+      displaySightings();
+    }
+
+    browseButton.addEventListener("click", () => loadSightings("/tick-sightings"));
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const term = searchTerm.value.trim();
+      if (!term) {
+        searchTerm.focus();
+        return;
+      }
+
+      const encodedTerm = encodeURIComponent(term);
+      const url = searchType.value === "city"
+        ? `/tick-sightings/city/${encodedTerm}`
+        : `/tick-sightings/species?species=${encodedTerm}`;
+      loadSightings(url);
+    });
+  </script>
+</body>
+</html>
