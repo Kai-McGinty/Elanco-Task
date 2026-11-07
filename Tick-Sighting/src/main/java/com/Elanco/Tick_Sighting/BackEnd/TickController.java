@@ -1,8 +1,12 @@
 package com.Elanco.Tick_Sighting.BackEnd;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,6 +36,30 @@ public class TickController {
         return ParseJSON(objectMapper.readTree(TickJson));
     }
     
+    @GetMapping("/tick-sightings/city/{city}")
+    public List<TickSighting> getSightingByCity(@PathVariable String city) {
+        JsonNode citySightings = objectMapper.readTree(service.getSightingByCity(city));
+
+        List<TickSighting> parsedSightings = new ArrayList<>(citySightings.size());
+        for (JsonNode sighting : citySightings) {
+            parsedSightings.add(ParseJSON(sighting));
+        }
+
+    return parsedSightings;
+    }
+
+    @GetMapping("/tick-sightings/species")
+    public List<TickSighting> getSightingBySpecies(@RequestParam String species) {
+        JsonNode speciesSightings = objectMapper.readTree(service.getSightingBySpecies(species));
+
+        List<TickSighting> parsedSpecies = new ArrayList<>(speciesSightings.size());
+        for (JsonNode sighting : speciesSightings) {
+            parsedSpecies.add(ParseJSON(sighting));
+        }
+
+    return parsedSpecies;
+    }
+
     // Method to parse JSON and create a TickSighting object
     private TickSighting ParseJSON(JsonNode data) {
         JsonNode id = data.path("id");

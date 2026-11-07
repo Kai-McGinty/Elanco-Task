@@ -21,4 +21,12 @@ public class TickService {
     public String getSingleSighting(String sightingId) {  
         return client.get().uri("/tick-sightings/{sightingId}", sightingId).retrieve().body(String.class);
     }
+
+    public String getSightingByCity(String city) {
+        return client.get().uri("/tick-sightings/city/{city}", city).retrieve().body(String.class);
+    }
+
+    public String getSightingBySpecies(String species) {
+        return client.get().uri("/tick-sightings/species/{species}", species).retrieve().body(String.class);
+    }
 }
