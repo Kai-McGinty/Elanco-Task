@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f1">
+  <title>Tick Tracker | Identification</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20352d;
+      --muted: #64736a;
+      --green: #245c43;
+      --green-dark: #194632;
+      --mint: #e6efe6;
+      --paper: #ffffff;
+      --line: #e1e8df;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; color: var(--ink); background: #f7f8f4; line-height: 1.6; }
+    a { color: inherit; }
+    .site-header {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1rem;
+      padding: .9rem max(1.25rem, calc((100% - 1120px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgb(255 255 255 / 94%);
+      backdrop-filter: blur(12px);
+    }
+    .menu-button, .menu-close {
+      display: grid;
+      width: 2.7rem;
+      height: 2.7rem;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: .7rem;
+      background: var(--paper);
+      color: var(--green-dark);
+      cursor: pointer;
+      font: inherit;
+      font-size: 1.35rem;
+    }
+    .menu-button:hover, .menu-close:hover { background: var(--mint); }
+    .menu-button:focus-visible, .menu-close:focus-visible, .side-menu a:focus-visible { outline: 3px solid #91b849; outline-offset: 3px; }
+    .brand { color: var(--green-dark); font-size: 1.05rem; font-weight: 800; text-decoration: none; }
+    .site-header nav { margin-left: auto; }
+    nav { display: flex; flex-wrap: wrap; gap: .3rem; }
+    nav a { padding: .55rem .8rem; border-radius: 999px; color: var(--muted); font-size: .92rem; font-weight: 650; text-decoration: none; }
+    nav a:hover, nav a:focus-visible { color: var(--green-dark); background: var(--mint); }
+    .menu-backdrop {
+      position: fixed;
+      z-index: 1100;
+      inset: 0;
+      border: 0;
+      background: rgb(20 35 27 / 38%);
+      cursor: pointer;
+    }
+    .menu-backdrop[hidden], .side-menu[hidden] { display: none; }
+    .side-menu {
+      position: fixed;
+      z-index: 1101;
+      inset: 0 auto 0 0;
+      display: flex;
+      width: min(19rem, 85vw);
+      flex-direction: column;
+      padding: 1.25rem;
+      background: var(--paper);
+      box-shadow: 12px 0 32px rgb(20 35 27 / 16%);
+    }
+    .side-menu-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+    .side-menu-header h2 { margin: 0; font-size: 1.3rem; }
+    .side-menu nav { display: grid; gap: .35rem; }
+    .side-menu nav a { padding: .75rem; border-radius: .65rem; }
+    main { width: min(100% - 2.5rem, 900px); margin: clamp(3rem, 10vw, 7rem) auto; }
+    .eyebrow { margin-bottom: .8rem; color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0 0 1rem; font-size: clamp(2.5rem, 6vw, 4rem); letter-spacing: -.05em; line-height: 1.05; }
+    .intro { max-width: 600px; color: var(--muted); font-size: 1.1rem; }
+    .info-card { margin-top: 2rem; padding: clamp(1.25rem, 4vw, 2rem); border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); }
+    .info-card h2 { margin: 0 0 .5rem; font-size: 1.25rem; }
+    .info-card p { margin: 0; color: var(--muted); }
+    footer { padding: 1.5rem 1.25rem; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: .88rem; }
+    @media (max-width: 600px) {
+      .site-header { align-items: center; flex-direction: row; flex-wrap: wrap; padding: .8rem 1rem; }
+      .site-header nav { width: 100%; margin-left: 0; }
+      nav a { padding: .4rem .65rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <button class="menu-button" id="menu-button" type="button" aria-label="Open menu" aria-controls="side-menu" aria-expanded="false">
+      <span aria-hidden="true">☰</span>
+    </button>
+    <a class="brand" href="/">Tick Tracker</a>
+  </header>
+  <button class="menu-backdrop" id="menu-backdrop" type="button" aria-label="Close menu" hidden></button>
+  <aside class="side-menu" id="side-menu" aria-label="Site menu" hidden>
+    <div class="side-menu-header">
+      <h2>Menu</h2>
+      <button class="menu-close" id="menu-close" type="button" aria-label="Close menu">×</button>
+    </div>
+    <nav aria-label="Site menu">
+      <a href="/">Home</a>
+      <a href="/map">Map</a>
+      <a href="/identification" aria-current="page">Identification</a>
+    </nav>
+  </aside>
+  <main>
+    <p class="eyebrow">Tick Tracker guide</p>
+    <h1>Tick identification</h1>
+    <p class="intro">Learn about the tick species represented in community sighting reports.</p>
+    <section class="info-card">
+      <h2>Identification guide coming soon</h2>
+      <p>Species information on this page is not yet available. Browse reported sightings on the Home page to see the species names provided with each report. For health concerns or a suspected tick bite, follow local public-health guidance.</p>
+    </section>
+  </main>
+  <footer>Tick Tracker · Explore reported sightings</footer>
+  <script>
+    const menuButton = document.querySelector("#menu-button");
+    const menu = document.querySelector("#side-menu");
+    const menuBackdrop = document.querySelector("#menu-backdrop");
+    const menuClose = document.querySelector("#menu-close");
+
+    function setMenuOpen(isOpen) {
+      menu.hidden = !isOpen;
+      menuBackdrop.hidden = !isOpen;
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menuButton.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+      if (isOpen) {
+        menu.querySelector("a").focus();
+      } else {
+        menuButton.focus();
+      }
+    }
+
+    menuButton.addEventListener("click", () => setMenuOpen(menu.hidden));
+    menuClose.addEventListener("click", () => setMenuOpen(false));
+    menuBackdrop.addEventListener("click", () => setMenuOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !menu.hidden) {
+        setMenuOpen(false);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -19,15 +19,42 @@ public class TickController {
 
     private final TickService service;
     private final ObjectMapper objectMapper;
+    private final UkLocationCoordinates coordinates;
 
-    public TickController(TickService service, ObjectMapper objectMapper) {
+    public TickController(TickService service, ObjectMapper objectMapper, UkLocationCoordinates coordinates) {
         this.service = service;
         this.objectMapper = objectMapper;
+        this.coordinates = coordinates;
     }
 
     @GetMapping("/tick-sightings")
     public String getAllTickSightings() {
         return service.getTickSightings();
+    }
+
+    @GetMapping("/api/map/sightings")
+    public List<MapSighting> getMapSightings() {
+        JsonNode sightings = objectMapper.readTree(service.getTickSightings());
+        if (!sightings.isArray()) {
+            throw new InvalidTickSightingResponseException();
+        }
+
+        List<MapSighting> mapSightings = new ArrayList<>(sightings.size());
+        for (JsonNode data : sightings) {
+            TickSighting sighting = ParseJSON(data);
+            UkLocationCoordinates.Coordinates location = coordinates.find(sighting.getLocation());
+            mapSightings.add(new MapSighting(
+                sighting.getId(),
+                sighting.getLocation(),
+                sighting.getDate(),
+                sighting.getSpecies(),
+                sighting.getLatinName(),
+                location == null ? null : location.latitude(),
+                location == null ? null : location.longitude()
+            ));
+        }
+
+        return mapSightings;
     }
 
     @GetMapping("/tick-sightings/{sightingId}")

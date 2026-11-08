@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f1">
+  <title>Tick Tracker | Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20352d;
+      --muted: #64736a;
+      --green: #245c43;
+      --green-dark: #194632;
+      --mint: #e6efe6;
+      --paper: #ffffff;
+      --line: #e1e8df;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; color: var(--ink); background: #f7f8f4; line-height: 1.6; }
+    a { color: inherit; }
+    .site-header {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1rem;
+      padding: .9rem max(1.25rem, calc((100% - 1120px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgb(255 255 255 / 94%);
+      backdrop-filter: blur(12px);
+    }
+    .menu-button, .menu-close {
+      display: grid;
+      width: 2.7rem;
+      height: 2.7rem;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: .7rem;
+      background: var(--paper);
+      color: var(--green-dark);
+      cursor: pointer;
+      font: inherit;
+      font-size: 1.35rem;
+    }
+    .menu-button:hover, .menu-close:hover { background: var(--mint); }
+    .menu-button:focus-visible, .menu-close:focus-visible, .side-menu a:focus-visible { outline: 3px solid #91b849; outline-offset: 3px; }
+    .brand { color: var(--green-dark); font-size: 1.05rem; font-weight: 800; text-decoration: none; }
+    .site-header nav { margin-left: auto; }
+    nav { display: flex; flex-wrap: wrap; gap: .3rem; }
+    nav a { padding: .55rem .8rem; border-radius: 999px; color: var(--muted); font-size: .92rem; font-weight: 650; text-decoration: none; }
+    nav a:hover, nav a:focus-visible { color: var(--green-dark); background: var(--mint); }
+    .menu-backdrop {
+      position: fixed;
+      z-index: 1100;
+      inset: 0;
+      border: 0;
+      background: rgb(20 35 27 / 38%);
+      cursor: pointer;
+    }
+    .menu-backdrop[hidden], .side-menu[hidden] { display: none; }
+    .side-menu {
+      position: fixed;
+      z-index: 1101;
+      inset: 0 auto 0 0;
+      display: flex;
+      width: min(19rem, 85vw);
+      flex-direction: column;
+      padding: 1.25rem;
+      background: var(--paper);
+      box-shadow: 12px 0 32px rgb(20 35 27 / 16%);
+    }
+    .side-menu-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+    .side-menu-header h2 { margin: 0; font-size: 1.3rem; }
+    .side-menu nav { display: grid; gap: .35rem; }
+    .side-menu nav a { padding: .75rem; border-radius: .65rem; }
+    main { width: min(100% - 2.5rem, 1120px); margin: clamp(2.5rem, 7vw, 5rem) auto; }
+    .eyebrow { margin-bottom: .8rem; color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0 0 1rem; font-size: clamp(2.5rem, 6vw, 4rem); letter-spacing: -.05em; line-height: 1.05; }
+    .intro { max-width: 600px; color: var(--muted); font-size: 1.1rem; }
+    .map-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.75rem 0 1rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); }
+    .map-tools label { display: block; margin-bottom: .4rem; font-size: .9rem; font-weight: 750; }
+    .map-tools select, .map-tools input { width: 100%; min-height: 2.8rem; padding: .6rem .75rem; border: 1px solid #cbd6ca; border-radius: .65rem; background: white; color: var(--ink); font: inherit; }
+    .map-tools :focus-visible { outline: 3px solid #91b849; outline-offset: 3px; }
+    .map-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin: .75rem 0; color: var(--muted); font-size: .9rem; }
+    .map-status { margin: 0; }
+    .map-status.error { color: #a3332c; }
+    .map-legend { display: flex; flex-wrap: wrap; gap: .4rem 1rem; }
+    .legend-item { display: inline-flex; align-items: center; gap: .4rem; }
+    .legend-dot { width: .75rem; height: .75rem; border-radius: 50%; }
+    .recent-indicator { display: inline-block; width: .65rem; height: .65rem; border: 2px solid #245c43; border-radius: 50%; }
+    #sightings-map { height: min(68vh, 650px); min-height: 360px; overflow: hidden; border: 1px solid #dce6d9; border-radius: 1rem; background: #e6efe6; }
+    .map-note { margin: .75rem 0 0; color: var(--muted); font-size: .85rem; }
+    .leaflet-popup-content-wrapper { border-radius: .8rem; }
+    .popup-title { margin: 0 0 .35rem; color: var(--green-dark); font-size: 1rem; }
+    .popup-summary { margin: 0 0 .4rem; color: var(--muted); }
+    .popup-species { margin: 0; padding-left: 1.15rem; }
+    .popup-recent { margin: .5rem 0 0; font-weight: 700; }
+    footer { padding: 1.5rem 1.25rem; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: .88rem; }
+    @media (max-width: 600px) {
+      .site-header { align-items: center; flex-direction: row; flex-wrap: wrap; padding: .8rem 1rem; }
+      .map-tools { grid-template-columns: 1fr; }
+      #sightings-map { min-height: 420px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <button class="menu-button" id="menu-button" type="button" aria-label="Open menu" aria-controls="side-menu" aria-expanded="false">
+      <span aria-hidden="true">☰</span>
+    </button>
+    <a class="brand" href="/">Tick Tracker</a>
+  </header>
+  <button class="menu-backdrop" id="menu-backdrop" type="button" aria-label="Close menu" hidden></button>
+  <aside class="side-menu" id="side-menu" aria-label="Site menu" hidden>
+    <div class="side-menu-header">
+      <h2>Menu</h2>
+      <button class="menu-close" id="menu-close" type="button" aria-label="Close menu">×</button>
+    </div>
+    <nav aria-label="Site menu">
+      <a href="/">Home</a>
+      <a href="/map" aria-current="page">Map</a>
+      <a href="/identification">Identification</a>
+    </nav>
+  </aside>
+  <main>
+    <p class="eyebrow">Community sightings</p>
+    <h1>Sightings map</h1>
+    <p class="intro">Explore reported tick sightings across the UK. Filter by species and date to see where reports have been recorded.</p>
+    <form class="map-tools" id="map-filters">
+      <div>
+        <label for="species-filter">Species</label>
+        <select id="species-filter" name="species">
+          <option value="">All species</option>
+        </select>
+      </div>
+      <div>
+        <label for="date-from">From date</label>
+        <input id="date-from" name="dateFrom" type="date">
+      </div>
+      <div>
+        <label for="date-to">To date</label>
+        <input id="date-to" name="dateTo" type="date">
+      </div>
+    </form>
+    <div class="map-meta">
+      <p class="map-status" id="map-status" role="status" aria-live="polite">Loading sightings…</p>
+      <div class="map-legend" id="map-legend" aria-label="Map legend"></div>
+    </div>
+    <div id="sightings-map" role="region" aria-label="Interactive map of UK tick sightings"></div>
+    <p class="map-note">Markers show approximate city-centre locations, not the exact location of an individual tick. Marker size represents report count; color indicates the most commonly reported species at that location. A ring marks locations with reports in the last 12 months. Map tiles © OpenStreetMap contributors.</p>
+  </main>
+  <footer>Tick Tracker · Explore reported sightings</footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/map.js" defer></script>
+  <script>
+    const menuButton = document.querySelector("#menu-button");
+    const menu = document.querySelector("#side-menu");
+    const menuBackdrop = document.querySelector("#menu-backdrop");
+    const menuClose = document.querySelector("#menu-close");
+
+    function setMenuOpen(isOpen) {
+      menu.hidden = !isOpen;
+      menuBackdrop.hidden = !isOpen;
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menuButton.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+      if (isOpen) {
+        menu.querySelector("a").focus();
+      } else {
+        menuButton.focus();
+      }
+    }
+
+    menuButton.addEventListener("click", () => setMenuOpen(menu.hidden));
+    menuClose.addEventListener("click", () => setMenuOpen(false));
+    menuBackdrop.addEventListener("click", () => setMenuOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !menu.hidden) {
+        setMenuOpen(false);
+      }
+    });
+  </script>
+</body>
+</html>
