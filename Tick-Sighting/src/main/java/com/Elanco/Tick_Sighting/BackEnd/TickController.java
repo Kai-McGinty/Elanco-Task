@@ -2,6 +2,7 @@ package com.Elanco.Tick_Sighting.BackEnd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,6 +56,20 @@ public class TickController {
         }
 
         return mapSightings;
+    }
+
+    @GetMapping("/api/tick-species")
+    public List<TickSpeciesEntry> getTickSpecies() {
+        return Arrays.stream(TickSpecies.values())
+            .map(species -> new TickSpeciesEntry(
+                species.getCommonName(),
+                species.getScientificName(),
+                species.getAppearance(),
+                species.getSize(),
+                species.getHabitat(),
+                species.getRisk()
+            ))
+            .toList();
     }
 
     @GetMapping("/tick-sightings/{sightingId}")
