@@ -1,8 +1,9 @@
 package com.Elanco.Tick_Sighting.BackEnd;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
+import java.util.TreeSet;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +57,24 @@ public class TickController {
         }
 
         return mapSightings;
+    }
+
+    @GetMapping("/api/report/options")
+    public ReportOptions getReportOptions() {
+        JsonNode sightings = objectMapper.readTree(service.getTickSightings());
+        if (!sightings.isArray()) {
+            throw new InvalidTickSightingResponseException();
+        }
+
+        TreeSet<String> species = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        TreeSet<String> locations = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (JsonNode data : sightings) {
+            TickSighting sighting = ParseJSON(data);
+            species.add(sighting.getSpecies());
+            locations.add(sighting.getLocation());
+        }
+
+        return new ReportOptions(List.copyOf(species), List.copyOf(locations));
     }
 
     @GetMapping("/api/tick-species")

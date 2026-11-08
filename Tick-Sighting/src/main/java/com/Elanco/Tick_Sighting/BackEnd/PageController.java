@@ -16,4 +16,9 @@ public class PageController {
     public String identification() {
         return "forward:/identification.html";
     }
+
+    @GetMapping("/report")
+    public String report() {
+        return "forward:/report.html";
+    }
 }
