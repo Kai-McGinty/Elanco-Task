@@ -87,6 +87,12 @@
     .options-status { margin: 0; color: var(--muted); font-size: .9rem; }
     .options-status.error { color: #a3332c; }
     .date-time-error { min-height: 1.4em; margin: 0; color: #a3332c; font-size: .9rem; }
+    .form-actions { display: flex; justify-content: flex-end; }
+    .report-button { min-height: 2.9rem; padding: .65rem 1.2rem; border: 0; border-radius: .65rem; background: #2474c6; color: white; cursor: pointer; font: inherit; font-weight: 750; }
+    .report-button:hover { background: #1b5d9f; }
+    .report-button:disabled { cursor: wait; opacity: .7; }
+    .form-status { margin: 0; color: var(--green-dark); }
+    .form-status.error { color: #a3332c; }
     footer { padding: 1.5rem 1.25rem; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: .88rem; }
     @media (max-width: 600px) {
       .site-header { padding: .8rem 1rem; }
@@ -117,7 +123,7 @@
     <p class="eyebrow">Community sightings</p>
     <h1>Report a tick sighting</h1>
     <p class="intro">Enter the species, location, and date and time for the tick sighting.</p>
-    <form class="report-form">
+    <form class="report-form" id="report-form" enctype="multipart/form-data">
       <div class="field">
         <label for="species">Species</label>
         <select id="species" name="species" required disabled>
@@ -132,11 +138,20 @@
       </div>
       <div class="field">
         <label for="date-time">Date and time</label>
-        <input id="date-time" name="dateTime" type="datetime-local" aria-describedby="date-time-help date-time-error">
+        <input id="date-time" name="dateTime" type="datetime-local" required aria-describedby="date-time-help date-time-error">
         <p id="date-time-help" class="options-status">Future dates and times are unavailable.</p>
         <p id="date-time-error" class="date-time-error" role="alert"></p>
       </div>
+      <div class="field">
+        <label for="image">Image (optional)</label>
+        <input id="image" name="image" type="file" accept="image/*" aria-describedby="image-help">
+        <p id="image-help" class="options-status">Choose an image up to 5 MB. This demo validates but does not save submissions or images.</p>
+      </div>
       <p class="options-status" id="options-status" role="status" aria-live="polite">Loading species and locations…</p>
+      <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+      <div class="form-actions">
+        <button class="report-button" id="submit-report" type="submit">Report</button>
+      </div>
     </form>
   </main>
   <footer>Tick Tracker · Explore reported sightings</footer>

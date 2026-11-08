@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -75,6 +81,53 @@ public class TickController {
         }
 
         return new ReportOptions(List.copyOf(species), List.copyOf(locations));
+    }
+
+    @PostMapping(value = "/api/reports", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ReportSubmissionResponse> validateReport(
+        @RequestParam String species,
+        @RequestParam String location,
+        @RequestParam String dateTime,
+        @RequestParam(required = false) MultipartFile image
+    ) {
+        boolean knownSpecies = Arrays.stream(TickSpecies.values())
+            .anyMatch(tickSpecies -> tickSpecies.getCommonName().equals(species));
+        if (!knownSpecies) {
+            return ResponseEntity.badRequest()
+                .body(new ReportSubmissionResponse("Select a species from the available options."));
+        }
+        if (location.isBlank()) {
+            return ResponseEntity.badRequest()
+                .body(new ReportSubmissionResponse("Select a location."));
+        }
+
+        LocalDateTime sightingDateTime;
+        try {
+            sightingDateTime = LocalDateTime.parse(dateTime);
+        } catch (DateTimeParseException exception) {
+            return ResponseEntity.badRequest()
+                .body(new ReportSubmissionResponse("Enter a valid sighting date and time."));
+        }
+        if (sightingDateTime.isAfter(LocalDateTime.now())) {
+            return ResponseEntity.badRequest()
+                .body(new ReportSubmissionResponse("The sighting date and time cannot be in the future."));
+        }
+
+        if (image != null && !image.isEmpty()) {
+            if (image.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                    .body(new ReportSubmissionResponse("The image must be no larger than 5 MB."));
+            }
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                    .body(new ReportSubmissionResponse("Upload a valid image file."));
+            }
+        }
+
+        return ResponseEntity.ok(new ReportSubmissionResponse(
+            "Report details validated. No report or image was saved."
+        ));
     }
 
     @GetMapping("/api/tick-species")

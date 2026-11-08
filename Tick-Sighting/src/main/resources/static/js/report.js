@@ -4,6 +4,10 @@
   const status = document.querySelector("#options-status");
   const dateTimeInput = document.querySelector("#date-time");
   const dateTimeError = document.querySelector("#date-time-error");
+  const form = document.querySelector("#report-form");
+  const imageInput = document.querySelector("#image");
+  const formStatus = document.querySelector("#form-status");
+  const submitButton = document.querySelector("#submit-report");
 
   function getLocalDateTimeValue(date) {
     const pad = (value) => String(value).padStart(2, "0");
@@ -34,6 +38,48 @@
     }
     select.disabled = options.length === 0;
   }
+
+  imageInput.addEventListener("change", () => {
+    const image = imageInput.files[0];
+    if (image && image.size > 5 * 1024 * 1024) {
+      imageInput.setCustomValidity("Choose an image no larger than 5 MB.");
+      formStatus.textContent = "The selected image is larger than 5 MB.";
+      formStatus.classList.add("error");
+      imageInput.reportValidity();
+      return;
+    }
+    imageInput.setCustomValidity("");
+    formStatus.textContent = "";
+    formStatus.classList.remove("error");
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    validateDateTime();
+    if (!form.reportValidity()) {
+      return;
+    }
+
+    formStatus.textContent = "Validating report…";
+    formStatus.classList.remove("error");
+    submitButton.disabled = true;
+    try {
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        body: new FormData(form)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || `The report endpoint returned an error (${response.status}).`);
+      }
+      formStatus.textContent = result.message;
+    } catch (error) {
+      formStatus.textContent = error.message || "Could not validate the report. Please try again.";
+      formStatus.classList.add("error");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
 
   validateDateTime();
   dateTimeInput.addEventListener("input", validateDateTime);
