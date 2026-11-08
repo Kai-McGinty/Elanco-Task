@@ -98,7 +98,11 @@
     #sightings-map { height: min(68vh, 650px); min-height: 360px; overflow: hidden; border: 1px solid #dce6d9; border-radius: 1rem; background: #e6efe6; }
     .map-note { margin: .75rem 0 0; color: var(--muted); font-size: .85rem; }
     .leaflet-popup-content-wrapper { border-radius: .8rem; }
-    .popup-title { margin: 0 0 .35rem; color: var(--green-dark); font-size: 1rem; }
+    .popup-title-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .35rem; }
+    .popup-title { margin: 0; color: var(--green-dark); font-size: 1rem; }
+    .share-button { display: inline-flex; min-height: 1.9rem; align-items: center; gap: .3rem; padding: .2rem .55rem; border: 1px solid var(--line); border-radius: .5rem; background: white; color: var(--green-dark); cursor: pointer; font: inherit; font-size: .78rem; font-weight: 700; }
+    .share-button:hover { background: var(--mint); }
+    .share-button:focus-visible { outline: 3px solid #91b849; outline-offset: 2px; }
     .popup-summary { margin: 0 0 .4rem; color: var(--muted); }
     .popup-species { margin: 0; padding-left: 1.15rem; }
     .popup-recent { margin: .5rem 0 0; font-weight: 700; }
@@ -154,7 +158,7 @@
       <div class="map-legend" id="map-legend" aria-label="Map legend"></div>
     </div>
     <div id="sightings-map" role="region" aria-label="Interactive map of UK tick sightings"></div>
-    <p class="map-note">Markers show approximate city-centre locations, not the exact location of an individual tick. Marker size represents report count; color indicates the most commonly reported species at that location. A ring marks locations with reports in the last 12 months. Map tiles © OpenStreetMap contributors.</p>
+    <p class="map-note">Markers show approximate city-centre locations, not the exact location of an individual tick. Marker size represents report count; color indicates the most commonly reported species at that location. A ring marks locations with reports in the last 12 months.</p>
   </main>
   <footer>Tick Tracker · Explore reported sightings</footer>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

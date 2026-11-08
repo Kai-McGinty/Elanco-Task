@@ -77,9 +77,35 @@
 
   function createPopup(location) {
     const popup = document.createElement("div");
+    const titleRow = document.createElement("div");
+    titleRow.className = "popup-title-row";
     const title = document.createElement("h3");
     title.className = "popup-title";
     title.textContent = location.name;
+    const shareButton = document.createElement("button");
+    shareButton.type = "button";
+    shareButton.className = "share-button";
+    shareButton.setAttribute("aria-label", `Copy ${location.name} tick report summary`);
+    shareButton.textContent = "Share";
+    shareButton.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const reportLines = Object.entries(location.speciesCounts)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([species, count]) => `${species} - ${count} ${count === 1 ? "report" : "reports"}`);
+      const clipboardText = [location.name, ...reportLines].join("\n");
+
+      try {
+        if (!navigator.clipboard?.writeText) {
+          throw new Error("Clipboard access is unavailable in this browser or page context.");
+        }
+        await navigator.clipboard.writeText(clipboardText);
+        shareButton.textContent = "Copied";
+        showStatus(`Copied ${location.name} report summary to the clipboard.`);
+      } catch (error) {
+        showStatus(error.message || "Could not copy the report summary to the clipboard.", true);
+      }
+    });
+    titleRow.append(title, shareButton);
     const summary = document.createElement("p");
     summary.className = "popup-summary";
     summary.textContent = `${location.count} ${location.count === 1 ? "report" : "reports"}`;
@@ -91,7 +117,7 @@
       item.textContent = `${species}: ${count}`;
       list.append(item);
     }
-    popup.append(title, summary, list);
+    popup.append(titleRow, summary, list);
 
     if (location.latestDate) {
       const latest = document.createElement("p");
