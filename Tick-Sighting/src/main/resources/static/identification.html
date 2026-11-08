@@ -94,6 +94,9 @@
     .species-fact dd { margin: 0; color: var(--muted); }
     .species-status { margin-top: 1.25rem; color: var(--muted); }
     .species-status.error { color: #a3332c; }
+    .additional-info { margin-top: 1.5rem; padding: clamp(1.25rem, 3vw, 1.75rem); border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); }
+    .additional-info h2 { margin: 0 0 .5rem; color: var(--green-dark); font-size: 1.25rem; }
+    .additional-info p { min-height: 3rem; margin: 0; color: var(--muted); }
     .species-disclaimer { margin-top: 1.5rem; padding: 1rem 1.15rem; border-left: 4px solid #a6c66a; border-radius: .25rem .7rem .7rem .25rem; background: var(--mint); color: var(--muted); font-size: .92rem; }
     .species-disclaimer a { color: var(--green-dark); font-weight: 700; }
     footer { padding: 1.5rem 1.25rem; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: .88rem; }
@@ -130,7 +133,11 @@
     <p class="intro">Use this guide to understand the appearance, typical size, habitat, and general risk context of tick species named in community reports. It is educational information, not a substitute for expert identification.</p>
     <p class="species-status" id="species-status" role="status" aria-live="polite">Loading species…</p>
     <section class="species-list" id="species-list" aria-label="Tick species"></section>
-    <p class="species-disclaimer">Tick sightings are not tested for pathogens, so a report cannot show whether a tick carried an infection. Size and appearance vary by life stage and feeding. For health concerns after a bite, follow <a href="https://www.nhs.uk/conditions/lyme-disease/">NHS guidance</a>. <a href="https://www.gov.uk/guidance/tick-surveillance-scheme">UKHSA Tick Surveillance Scheme</a></p>
+    <section class="additional-info" aria-labelledby="additional-info-heading">
+      <h2 id="additional-info-heading">Tips to prevent bites</h2>
+      <p>The most important step in the fight against ticks is prevention. Choose an effective tick prevention product all year round; there are plenty of options depending on your pet's lifestyle, such as the Seresto™ collar or Advantix™. Great sources of information for tick prevention and general pet health can be found on the official <a href="https://mypetandi.elanco.com/en_gb" target="_blank" rel="noopener noreferrer">Elanco</a> website.</p>
+    </section>
+    <p class="species-disclaimer">For proper information about tick bites and prevention, consult a healthcare professional or your local health authority.</p>
   </main>
   <footer>Tick Tracker · Explore reported sightings</footer>
   <script src="/js/identification.js" defer></script>
